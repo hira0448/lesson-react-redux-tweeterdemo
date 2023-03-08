@@ -122,6 +122,24 @@ const Auth: React.FC = () => {
               variant="contained"
               color="primary"
               className={classes.submit}
+              startIcon={<EmailIcon />}
+              onClick={
+                isLogin
+                  ? async () => {
+                      try {
+                        await signInEmail();
+                      } catch (err: any) {
+                        alert(err.message);
+                      }
+                    }
+                  : async () => {
+                      try {
+                        await signUpEmail();
+                      } catch (err: any) {
+                        alert(err.message);
+                      }
+                    }
+              }
             >
               {isLogin ? "Login" : "Register"}
             </Button>
