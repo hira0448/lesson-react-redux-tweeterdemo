@@ -77,7 +77,7 @@ const Auth: React.FC = () => {
   };
 
   const signUpEmail = async () => {
-    const authUser = await auth.signInWithEmailAndPassword(email, password);
+    const authUser = await auth.createUserWithEmailAndPassword(email, password);
     let url = "";
     if (avatarImage) {
       const S =
@@ -92,6 +92,7 @@ const Auth: React.FC = () => {
     }
     await authUser.user?.updateProfile({
       displayName: username,
+
       photoURL: url,
     });
     dispatch(
@@ -136,6 +137,25 @@ const Auth: React.FC = () => {
                     setUsername(e.target.value);
                   }}
                 />
+                <Box textAlign="center">
+                  <IconButton>
+                    <label>
+                      <AccountCircleIcon
+                        fontSize="large"
+                        className={
+                          avatarImage
+                            ? styles.login_addIconLoaded
+                            : styles.login_addIcon
+                        }
+                      />
+                      <input
+                        className={styles.login_hiddenIcon}
+                        type="file"
+                        onChange={onChangeImageHandler}
+                      />
+                    </label>
+                  </IconButton>
+                </Box>
               </>
             )}
             <TextField
