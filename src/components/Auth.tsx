@@ -189,6 +189,11 @@ const Auth: React.FC = () => {
               }}
             />
             <Button
+              disabled={
+                isLogin
+                  ? !email || password.length < 6
+                  : !username || !email || password.length < 6 || !avatarImage
+              }
               type="submit"
               fullWidth
               variant="contained"
