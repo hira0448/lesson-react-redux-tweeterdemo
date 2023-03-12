@@ -21,7 +21,7 @@ const App: React.FC = () => {
           })
         );
       } else {
-        dispatch(logout);
+        dispatch(logout());
       }
     });
     return () => {
