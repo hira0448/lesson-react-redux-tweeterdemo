@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import styles from "./Auth.module.css";
 import { useDispatch } from "react-redux";
 import { updateUserProfile } from "../features/userSlice";
+import styles from "./Auth.module.css";
 import { auth, provider, storage } from "../firebase";
+
 import {
   Avatar,
   Button,
@@ -16,12 +17,12 @@ import {
   IconButton,
   Box,
 } from "@material-ui/core";
+
 import SendIcon from "@material-ui/icons/Send";
 import CameraIcon from "@material-ui/icons/Camera";
 import EmailIcon from "@material-ui/icons/Email";
 import LockOutlinedIcon from "@material-ui/icons/LockOutlined";
 import AccountCircleIcon from "@material-ui/icons/AccountCircle";
-
 function getModalStyle() {
   const top = 50;
   const left = 50;
@@ -32,14 +33,22 @@ function getModalStyle() {
     transform: `translate(-${top}%, -${left}%)`,
   };
 }
-
 const useStyles = makeStyles((theme) => ({
   root: {
     height: "100vh",
   },
+  modal: {
+    outline: "none",
+    position: "absolute",
+    width: 400,
+    borderRadius: 10,
+    backgroundColor: "white",
+    boxShadow: theme.shadows[5],
+    padding: theme.spacing(10),
+  },
   image: {
     backgroundImage:
-      "url(https://images.unsplash.com/photo-1678005051371-94fc2c21ef4c?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2787&q=80)",
+      "url(https://images.unsplash.com/photo-1581784368651-8916092072cf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=934&q=80)",
     backgroundRepeat: "no-repeat",
     backgroundColor:
       theme.palette.type === "light"
@@ -59,25 +68,17 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: theme.palette.secondary.main,
   },
   form: {
-    width: "100%", // Fix IE 11 issue.
+    width: "100%",
     marginTop: theme.spacing(1),
   },
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
-  modal: {
-    outline: "none",
-    position: "absolute",
-    width: 400,
-    borderRadius: 10,
-    backgroundColor: "white",
-    boxShadow: theme.shadows[5],
-    padding: theme.spacing(10),
-  },
 }));
 
 const Auth: React.FC = () => {
   const classes = useStyles();
+
   const dispatch = useDispatch();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -86,7 +87,12 @@ const Auth: React.FC = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [openModal, setOpenModal] = React.useState(false);
   const [resetEmail, setResetEmail] = useState("");
-
+  const onChangeImageHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files![0]) {
+      setAvatarImage(e.target.files![0]);
+      e.target.value = "";
+    }
+  };
   const sendResetEmail = async (e: React.MouseEvent<HTMLElement>) => {
     await auth
       .sendPasswordResetEmail(resetEmail)
@@ -99,18 +105,12 @@ const Auth: React.FC = () => {
         setResetEmail("");
       });
   };
-
-  const onChangeImageHandler = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files![0]) {
-      setAvatarImage(e.target.files![0]);
-      e.target.value = "";
-    }
+  const signInGoogle = async () => {
+    await auth.signInWithPopup(provider).catch((err) => alert(err.message));
   };
-
   const signInEmail = async () => {
     await auth.signInWithEmailAndPassword(email, password);
   };
-
   const signUpEmail = async () => {
     const authUser = await auth.createUserWithEmailAndPassword(email, password);
     let url = "";
@@ -127,7 +127,6 @@ const Auth: React.FC = () => {
     }
     await authUser.user?.updateProfile({
       displayName: username,
-
       photoURL: url,
     });
     dispatch(
@@ -136,10 +135,6 @@ const Auth: React.FC = () => {
         photoUrl: url,
       })
     );
-  };
-
-  const signInGoogle = async () => {
-    await auth.signInWithPopup(provider).catch((err) => alert(err.message));
   };
 
   return (
@@ -172,25 +167,27 @@ const Auth: React.FC = () => {
                     setUsername(e.target.value);
                   }}
                 />
-                <Box textAlign="center">
-                  <IconButton>
-                    <label>
-                      <AccountCircleIcon
-                        fontSize="large"
-                        className={
-                          avatarImage
-                            ? styles.login_addIconLoaded
-                            : styles.login_addIcon
-                        }
-                      />
-                      <input
-                        className={styles.login_hiddenIcon}
-                        type="file"
-                        onChange={onChangeImageHandler}
-                      />
-                    </label>
-                  </IconButton>
-                </Box>
+                <Grid container direction="column" alignItems="center">
+                  <Box>
+                    <IconButton>
+                      <label>
+                        <AccountCircleIcon
+                          fontSize="large"
+                          className={
+                            avatarImage
+                              ? styles.login_addIconLoaded
+                              : styles.login_addIcon
+                          }
+                        />
+                        <input
+                          className={styles.login_hiddenIcon}
+                          type="file"
+                          onChange={onChangeImageHandler}
+                        />
+                      </label>
+                    </IconButton>
+                  </Box>
+                </Grid>
               </>
             )}
             <TextField
@@ -202,7 +199,6 @@ const Auth: React.FC = () => {
               label="Email Address"
               name="email"
               autoComplete="email"
-              autoFocus
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                 setEmail(e.target.value);
@@ -223,13 +219,13 @@ const Auth: React.FC = () => {
                 setPassword(e.target.value);
               }}
             />
+
             <Button
               disabled={
                 isLogin
                   ? !email || password.length < 6
                   : !username || !email || password.length < 6 || !avatarImage
               }
-              type="submit"
               fullWidth
               variant="contained"
               color="primary"
@@ -261,7 +257,7 @@ const Auth: React.FC = () => {
                   className={styles.login_reset}
                   onClick={() => setOpenModal(true)}
                 >
-                  Forgot password
+                  Forgot password ?
                 </span>
               </Grid>
               <Grid item>
@@ -269,21 +265,23 @@ const Auth: React.FC = () => {
                   className={styles.login_toggleMode}
                   onClick={() => setIsLogin(!isLogin)}
                 >
-                  {isLogin ? "Create new account ?" : "Back to Login"}
+                  {isLogin ? "Create new account ?" : "Back to login"}
                 </span>
               </Grid>
             </Grid>
+
             <Button
               fullWidth
               variant="contained"
-              color="primary"
-              startIcon={<CameraIcon />}
+              color="default"
               className={classes.submit}
+              startIcon={<CameraIcon />}
               onClick={signInGoogle}
             >
-              SignIn With Google
+              SignIn with Google
             </Button>
           </form>
+
           <Modal open={openModal} onClose={() => setOpenModal(false)}>
             <div style={getModalStyle()} className={classes.modal}>
               <div className={styles.login_modal}>
@@ -310,5 +308,4 @@ const Auth: React.FC = () => {
     </Grid>
   );
 };
-
 export default Auth;
